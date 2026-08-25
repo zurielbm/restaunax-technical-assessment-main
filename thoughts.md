@@ -41,3 +41,7 @@ Finish adding a simple router system. Also, added cache of your customer view an
 Kind of start on the core requirement, which is basically displaying the informat. And also creating the filtering system
 
 Added a skeleton UI for the loading and added error handling
+
+You worked on having a better system for the queue system and a search system, plus a improved filtering and sorting system.
+I just want to make sure that I had all the information needed. I think next I'm thinking of working into like a way for the restaurant owner to be able to move an order from its current state to the next state. I think the simplest implementation will be adding a button
+

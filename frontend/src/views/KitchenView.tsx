@@ -9,21 +9,71 @@ import {
   Typography,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import { Order } from "../../../shared/types";
 import { useCustomers } from "../hooks/useCustomers";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useOrders } from "../hooks/useOrders";
+import { buildQueue, QueueEntry } from "../queue/queue";
+import NextUpBanner from "../components/NextUpBanner";
 import OrderFilters, { StatusFilter } from "../components/OrderFilters";
 import OrderList from "../components/OrderList";
 import OrderListSkeleton from "../components/OrderListSkeleton";
+import OrderToolbar, {
+  SortOrder,
+  TypeFilter,
+} from "../components/OrderToolbar";
+import { shortOrderId } from "../utils/format";
+
+function comparatorFor(
+  sort: SortOrder,
+  queueByOrderId: ReadonlyMap<string, QueueEntry>,
+): (a: Order, b: Order) => number {
+  switch (sort) {
+    case "queue":
+      return (a, b) => {
+        const positionA =
+          queueByOrderId.get(a.id)?.position ?? Number.MAX_SAFE_INTEGER;
+        const positionB =
+          queueByOrderId.get(b.id)?.position ?? Number.MAX_SAFE_INTEGER;
+        if (positionA !== positionB) return positionA - positionB;
+        return b.createdAt.localeCompare(a.createdAt);
+      };
+    case "newest":
+      return (a, b) => b.createdAt.localeCompare(a.createdAt);
+    case "oldest":
+      return (a, b) => a.createdAt.localeCompare(b.createdAt);
+    case "total":
+      return (a, b) => b.total - a.total;
+  }
+}
 
 function KitchenView() {
   const { orders, error, isFetching, refetch } = useOrders();
   const { customersById, failed: customersFailed, retry } = useCustomers();
-  const [filter, setFilter] = useState<StatusFilter>("all");
+  const [filter, setFilter] = useState<StatusFilter>("queue");
+  const [searchInput, setSearchInput] = useState("");
+  const [type, setType] = useState<TypeFilter>("all");
+  const [sort, setSort] = useState<SortOrder>("queue");
+  const search = useDebouncedValue(searchInput.trim().toLowerCase(), 250);
 
-  const loadedOrders = orders ?? [];
+  const loadedOrders = useMemo(() => orders ?? [], [orders]);
+
+  const queue = useMemo(
+    () => buildQueue(loadedOrders, Date.now()),
+    [loadedOrders],
+  );
+
+  const queueByOrderId = useMemo(
+    () =>
+      new Map<string, QueueEntry>(
+        queue.map((entry) => [entry.order.id, entry]),
+      ),
+    [queue],
+  );
 
   const counts = useMemo<Record<StatusFilter, number>>(
     () => ({
+      queue: queue.length,
       all: loadedOrders.length,
       pending: loadedOrders.filter((order) => order.status === "pending")
         .length,
@@ -33,20 +83,46 @@ function KitchenView() {
       delivered: loadedOrders.filter((order) => order.status === "delivered")
         .length,
     }),
-    [loadedOrders],
+    [loadedOrders, queue],
   );
 
-  const visibleOrders = useMemo(
-    () =>
-      filter === "all"
-        ? loadedOrders
-        : loadedOrders.filter((order) => order.status === filter),
-    [loadedOrders, filter],
-  );
+  const visibleOrders = useMemo(() => {
+    const matchesSearch = (order: Order) => {
+      if (!search) return true;
+      const customerName =
+        customersById.get(order.customerId)?.name.toLowerCase() ?? "";
+      return (
+        order.id.toLowerCase().includes(search) ||
+        customerName.includes(search) ||
+        order.items.some((item) => item.name.toLowerCase().includes(search))
+      );
+    };
 
+    const base =
+      filter === "queue"
+        ? queue.map((entry) => entry.order)
+        : loadedOrders.filter(
+            (order) => filter === "all" || order.status === filter,
+          );
+
+    return base
+      .filter((order) => type === "all" || order.orderType === type)
+      .filter(matchesSearch)
+      .sort(comparatorFor(sort, queueByOrderId));
+  }, [loadedOrders, queue, queueByOrderId, filter, type, search, sort, customersById]);
+
+  const nextUp = queue[0];
+  const hasActiveFilters =
+    filter !== "queue" || type !== "all" || search !== "";
   const initialLoading = !orders && isFetching;
   const initialError = !orders && !isFetching && error;
   const refreshError = orders && error;
+
+  const clearFilters = () => {
+    setFilter("queue");
+    setType("all");
+    setSearchInput("");
+  };
 
   return (
     <Container maxWidth="lg">
@@ -63,6 +139,15 @@ function KitchenView() {
             <RefreshIcon />
           </IconButton>
         </Stack>
+
+        <OrderToolbar
+          search={searchInput}
+          onSearchChange={setSearchInput}
+          type={type}
+          onTypeChange={setType}
+          sort={sort}
+          onSortChange={setSort}
+        />
 
         <OrderFilters value={filter} counts={counts} onChange={setFilter} />
 
@@ -114,18 +199,29 @@ function KitchenView() {
           </Alert>
         )}
 
+        {orders && filter === "queue" && nextUp && (
+          <NextUpBanner
+            entry={nextUp}
+            customerName={
+              customersById.get(nextUp.order.customerId)?.name ??
+              `Customer ${shortOrderId(nextUp.order.customerId)}`
+            }
+          />
+        )}
+
         {orders && (
           <OrderList
             orders={visibleOrders}
             customersById={customersById}
+            queueByOrderId={queueByOrderId}
             emptyMessage={
-              filter === "all"
-                ? "No orders yet."
-                : `No ${filter} orders right now.`
+              filter === "queue" && !hasActiveFilters
+                ? "The queue is clear."
+                : hasActiveFilters
+                  ? "No orders match your filters."
+                  : "No orders yet."
             }
-            onClearFilter={
-              filter === "all" ? undefined : () => setFilter("all")
-            }
+            onClearFilter={hasActiveFilters ? clearFilters : undefined}
           />
         )}
       </Stack>

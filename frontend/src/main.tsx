@@ -1,24 +1,14 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import { theme } from "./theme/theme";
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#FF6B35',
-    },
-    secondary: {
-      main: '#004E89',
-    },
-  },
-});
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <App />
     </ThemeProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

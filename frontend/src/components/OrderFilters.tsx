@@ -1,9 +1,10 @@
 import { Chip, Tab, Tabs } from "@mui/material";
 import { OrderStatus } from "../../../shared/types";
 
-export type StatusFilter = OrderStatus | "all";
+export type StatusFilter = OrderStatus | "all" | "queue";
 
 const filters: StatusFilter[] = [
+  "queue",
   "all",
   "pending",
   "preparing",
@@ -34,7 +35,7 @@ function OrderFilters({ value, counts, onChange }: OrderFiltersProps) {
           value={filter}
           iconPosition="end"
           icon={<Chip label={counts[filter]} size="small" />}
-          label={filter === "all" ? "All" : filter}
+          label={filter === "all" ? "All" : filter === "queue" ? "Queue" : filter}
           sx={{ textTransform: "capitalize", minHeight: 48 }}
         />
       ))}

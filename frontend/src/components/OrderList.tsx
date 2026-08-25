@@ -1,11 +1,13 @@
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { Customer, Order } from "../../../shared/types";
+import { QueueEntry } from "../queue/queue";
 import { shortOrderId } from "../utils/format";
 import OrderCard from "./OrderCard";
 
 interface OrderListProps {
   orders: Order[];
   customersById: ReadonlyMap<string, Customer>;
+  queueByOrderId: ReadonlyMap<string, QueueEntry>;
   emptyMessage: string;
   onClearFilter?: () => void;
 }
@@ -13,6 +15,7 @@ interface OrderListProps {
 function OrderList({
   orders,
   customersById,
+  queueByOrderId,
   emptyMessage,
   onClearFilter,
 }: OrderListProps) {
@@ -30,19 +33,33 @@ function OrderList({
   }
 
   return (
-    <Grid container spacing={2}>
-      {orders.map((order) => (
-        <Grid item key={order.id} xs={12} sm={6} md={4}>
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: {
+          xs: "1fr",
+          sm: "repeat(2, 1fr)",
+          md: "repeat(3, 1fr)",
+        },
+        gap: 2,
+      }}
+    >
+      {orders.map((order) => {
+        const entry = queueByOrderId.get(order.id);
+        return (
           <OrderCard
+            key={order.id}
             order={order}
             customerName={
               customersById.get(order.customerId)?.name ??
               `Customer ${shortOrderId(order.customerId)}`
             }
+            queuePosition={entry?.position}
+            waitMinutes={entry?.waitMinutes}
           />
-        </Grid>
-      ))}
-    </Grid>
+        );
+      })}
+    </Box>
   );
 }
 

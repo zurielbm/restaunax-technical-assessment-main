@@ -1,21 +1,24 @@
-import {
-  Card,
-  CardContent,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
 import DeliveryDiningIcon from "@mui/icons-material/DeliveryDining";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import { Order } from "../../../shared/types";
 import { formatCurrency, relativeTime, shortOrderId } from "../utils/format";
 import StatusChip from "./StatusChip";
+import WaitChip from "./WaitChip";
 
 interface OrderCardProps {
   order: Order;
   customerName: string;
+  queuePosition?: number;
+  waitMinutes?: number;
 }
 
-function OrderCard({ order, customerName }: OrderCardProps) {
+function OrderCard({
+  order,
+  customerName,
+  queuePosition,
+  waitMinutes,
+}: OrderCardProps) {
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const TypeIcon =
     order.orderType === "delivery" ? DeliveryDiningIcon : ShoppingBagIcon;
@@ -26,12 +29,39 @@ function OrderCard({ order, customerName }: OrderCardProps) {
         <Stack
           direction="row"
           justifyContent="space-between"
-          alignItems="center"
+          alignItems="flex-start"
         >
-          <Typography variant="subtitle1" fontWeight={700}>
-            {shortOrderId(order.id)}
-          </Typography>
-          <StatusChip status={order.status} />
+          <Stack direction="row" alignItems="center" spacing={1}>
+            {queuePosition !== undefined && (
+              <Box
+                aria-label={`Queue position ${queuePosition}`}
+                sx={{
+                  minWidth: 28,
+                  height: 28,
+                  px: 0.5,
+                  borderRadius: "50%",
+                  bgcolor:
+                    queuePosition === 1 ? "primary.main" : "secondary.main",
+                  color: "common.white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 15,
+                  fontWeight: 800,
+                  lineHeight: 1,
+                }}
+              >
+                {queuePosition}
+              </Box>
+            )}
+            <Typography variant="subtitle1" fontWeight={700}>
+              {shortOrderId(order.id)}
+            </Typography>
+          </Stack>
+          <Stack alignItems="flex-end" spacing={0.5}>
+            <StatusChip status={order.status} />
+            {waitMinutes !== undefined && <WaitChip minutes={waitMinutes} />}
+          </Stack>
         </Stack>
         <Stack direction="row" alignItems="center" spacing={0.75} my={0.5}>
           <TypeIcon fontSize="small" color="action" />
@@ -40,8 +70,8 @@ function OrderCard({ order, customerName }: OrderCardProps) {
           </Typography>
         </Stack>
         <Typography variant="caption" color="text.secondary">
-          {itemCount} {itemCount === 1 ? "item" : "items"} ·{" "}
-          {order.orderType} · {relativeTime(order.createdAt)}
+          {itemCount} {itemCount === 1 ? "item" : "items"} · {order.orderType}{" "}
+          · {relativeTime(order.createdAt)}
         </Typography>
         <Stack
           direction="row"

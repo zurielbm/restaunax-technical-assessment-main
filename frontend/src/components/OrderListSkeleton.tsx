@@ -1,14 +1,22 @@
-import { Grid, Skeleton } from "@mui/material";
+import { Box, Skeleton } from "@mui/material";
 
 function OrderListSkeleton() {
   return (
-    <Grid container spacing={2}>
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: {
+          xs: "1fr",
+          sm: "repeat(2, 1fr)",
+          md: "repeat(3, 1fr)",
+        },
+        gap: 2,
+      }}
+    >
       {Array.from({ length: 6 }, (_, index) => (
-        <Grid item key={index} xs={12} sm={6} md={4}>
-          <Skeleton variant="rounded" height={140} />
-        </Grid>
+        <Skeleton key={index} variant="rounded" height={150} />
       ))}
-    </Grid>
+    </Box>
   );
 }
 
