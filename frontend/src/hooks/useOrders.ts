@@ -1,32 +1,48 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Order } from "../../../shared/types";
 import { ordersApi } from "../services/api";
 
-export type OrdersState =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; orders: Order[] };
+interface OrdersResult {
+  orders?: Order[];
+  error?: string;
+  isFetching: boolean;
+  refetch: () => void;
+}
 
-export function useOrders(): { state: OrdersState; refetch: () => void } {
-  const [state, setState] = useState<OrdersState>({ status: "loading" });
+export function errorMessage(error: unknown): string {
+  if (error instanceof TypeError) return "the server is unreachable";
+  if (error instanceof Error) return error.message;
+  return "something went wrong";
+}
+
+export function useOrders(): OrdersResult {
+  const [orders, setOrders] = useState<Order[]>();
+  const [error, setError] = useState<string>();
+  const [isFetching, setIsFetching] = useState(true);
+  const requestId = useRef(0);
 
   const load = useCallback(() => {
-    setState({ status: "loading" });
+    const id = ++requestId.current;
+    setIsFetching(true);
     ordersApi
       .getOrders()
-      .then((orders) => setState({ status: "ready", orders }))
-      .catch((error: unknown) =>
-        setState({
-          status: "error",
-          message:
-            error instanceof Error ? error.message : "Failed to load orders",
-        })
-      );
+      .then((fetched) => {
+        if (id !== requestId.current) return;
+        setOrders(fetched);
+        setError(undefined);
+      })
+      .catch((cause: unknown) => {
+        if (id !== requestId.current) return;
+        setError(errorMessage(cause));
+      })
+      .finally(() => {
+        if (id === requestId.current) setIsFetching(false);
+      });
   }, []);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  return { state, refetch: load };
+  return { orders, error, isFetching, refetch: load };
 }

@@ -40,3 +40,4 @@ Finish adding a simple router system. Also, added cache of your customer view an
 
 Kind of start on the core requirement, which is basically displaying the informat. And also creating the filtering system
 
+Added a skeleton UI for the loading and added error handling

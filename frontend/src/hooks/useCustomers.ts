@@ -1,28 +1,39 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Customer } from "../../../shared/types";
 import { customersApi } from "../services/api";
 
-export function useCustomers(): ReadonlyMap<string, Customer> {
+interface CustomersResult {
+  customersById: ReadonlyMap<string, Customer>;
+  failed: boolean;
+  retry: () => void;
+}
+
+export function useCustomers(): CustomersResult {
   const [customersById, setCustomersById] = useState<
     ReadonlyMap<string, Customer>
   >(new Map());
+  const [failed, setFailed] = useState(false);
+  const requestId = useRef(0);
 
-  useEffect(() => {
-    let cancelled = false;
+  const load = useCallback(() => {
+    const id = ++requestId.current;
+    setFailed(false);
     customersApi
       .getCustomers()
       .then((customers) => {
-        if (!cancelled) {
-          setCustomersById(
-            new Map(customers.map((customer) => [customer.id, customer]))
-          );
-        }
+        if (id !== requestId.current) return;
+        setCustomersById(
+          new Map(customers.map((customer) => [customer.id, customer]))
+        );
       })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
+      .catch(() => {
+        if (id === requestId.current) setFailed(true);
+      });
   }, []);
 
-  return customersById;
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return { customersById, failed, retry: load };
 }

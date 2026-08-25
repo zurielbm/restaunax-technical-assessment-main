@@ -4,6 +4,7 @@ import {
   Button,
   Container,
   IconButton,
+  LinearProgress,
   Stack,
   Typography,
 } from "@mui/material";
@@ -15,30 +16,37 @@ import OrderList from "../components/OrderList";
 import OrderListSkeleton from "../components/OrderListSkeleton";
 
 function KitchenView() {
-  const { state, refetch } = useOrders();
-  const customersById = useCustomers();
+  const { orders, error, isFetching, refetch } = useOrders();
+  const { customersById, failed: customersFailed, retry } = useCustomers();
   const [filter, setFilter] = useState<StatusFilter>("all");
 
-  const orders = state.status === "ready" ? state.orders : [];
+  const loadedOrders = orders ?? [];
 
   const counts = useMemo<Record<StatusFilter, number>>(
     () => ({
-      all: orders.length,
-      pending: orders.filter((order) => order.status === "pending").length,
-      preparing: orders.filter((order) => order.status === "preparing").length,
-      ready: orders.filter((order) => order.status === "ready").length,
-      delivered: orders.filter((order) => order.status === "delivered").length,
+      all: loadedOrders.length,
+      pending: loadedOrders.filter((order) => order.status === "pending")
+        .length,
+      preparing: loadedOrders.filter((order) => order.status === "preparing")
+        .length,
+      ready: loadedOrders.filter((order) => order.status === "ready").length,
+      delivered: loadedOrders.filter((order) => order.status === "delivered")
+        .length,
     }),
-    [orders]
+    [loadedOrders],
   );
 
   const visibleOrders = useMemo(
     () =>
       filter === "all"
-        ? orders
-        : orders.filter((order) => order.status === filter),
-    [orders, filter]
+        ? loadedOrders
+        : loadedOrders.filter((order) => order.status === filter),
+    [loadedOrders, filter],
   );
+
+  const initialLoading = !orders && isFetching;
+  const initialError = !orders && !isFetching && error;
+  const refreshError = orders && error;
 
   return (
     <Container maxWidth="lg">
@@ -50,7 +58,7 @@ function KitchenView() {
           <IconButton
             aria-label="Refresh orders"
             onClick={refetch}
-            disabled={state.status === "loading"}
+            disabled={isFetching}
           >
             <RefreshIcon />
           </IconButton>
@@ -58,9 +66,42 @@ function KitchenView() {
 
         <OrderFilters value={filter} counts={counts} onChange={setFilter} />
 
-        {state.status === "loading" && <OrderListSkeleton />}
+        {orders && (
+          <LinearProgress
+            sx={{ visibility: isFetching ? "visible" : "hidden" }}
+          />
+        )}
 
-        {state.status === "error" && (
+        {refreshError && (
+          <Alert
+            severity="warning"
+            action={
+              <Button color="inherit" size="small" onClick={refetch}>
+                Retry
+              </Button>
+            }
+          >
+            Refresh failed: {error}. Showing the last loaded orders.
+          </Alert>
+        )}
+
+        {customersFailed && (
+          <Alert
+            severity="warning"
+            action={
+              <Button color="inherit" size="small" onClick={retry}>
+                Retry
+              </Button>
+            }
+          >
+            Customer names couldn't be loaded, so orders show customer ids
+            instead.
+          </Alert>
+        )}
+
+        {initialLoading && <OrderListSkeleton />}
+
+        {initialError && (
           <Alert
             severity="error"
             action={
@@ -69,12 +110,11 @@ function KitchenView() {
               </Button>
             }
           >
-            Couldn't load orders: {state.message}. Check that the backend is
-            running on port 3000.
+            Couldn't load orders: {error}. Check if the backend is running.
           </Alert>
         )}
 
-        {state.status === "ready" && (
+        {orders && (
           <OrderList
             orders={visibleOrders}
             customersById={customersById}
