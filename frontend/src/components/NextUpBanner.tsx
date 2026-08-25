@@ -1,5 +1,5 @@
-import { Chip, Paper, Stack, Typography } from "@mui/material";
-import { QueueEntry } from "../queue/queue";
+import { Button, Chip, Paper, Stack, Typography } from "@mui/material";
+import { ADVANCE_LABEL, NEXT_STATUS, QueueEntry } from "../queue/queue";
 import { shortOrderId } from "../utils/format";
 import StatusChip from "./StatusChip";
 import WaitChip from "./WaitChip";
@@ -7,9 +7,10 @@ import WaitChip from "./WaitChip";
 interface NextUpBannerProps {
   entry: QueueEntry;
   customerName: string;
+  onAdvance: () => void;
 }
 
-function NextUpBanner({ entry, customerName }: NextUpBannerProps) {
+function NextUpBanner({ entry, customerName, onAdvance }: NextUpBannerProps) {
   return (
     <Paper
       variant="outlined"
@@ -32,6 +33,16 @@ function NextUpBanner({ entry, customerName }: NextUpBannerProps) {
         <Typography noWrap>{customerName}</Typography>
         <StatusChip status={entry.order.status} />
         <WaitChip minutes={entry.waitMinutes} />
+        {NEXT_STATUS[entry.order.status] && (
+          <Button
+            variant="contained"
+            size="small"
+            onClick={onAdvance}
+            sx={{ ml: "auto" }}
+          >
+            {ADVANCE_LABEL[entry.order.status]}
+          </Button>
+        )}
       </Stack>
     </Paper>
   );

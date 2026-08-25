@@ -1,7 +1,15 @@
-import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Stack,
+  Typography,
+} from "@mui/material";
 import DeliveryDiningIcon from "@mui/icons-material/DeliveryDining";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import { Order } from "../../../shared/types";
+import { ADVANCE_LABEL, NEXT_STATUS } from "../queue/queue";
 import { formatCurrency, relativeTime, shortOrderId } from "../utils/format";
 import StatusChip from "./StatusChip";
 import WaitChip from "./WaitChip";
@@ -11,6 +19,7 @@ interface OrderCardProps {
   customerName: string;
   queuePosition?: number;
   waitMinutes?: number;
+  onAdvance?: () => void;
 }
 
 function OrderCard({
@@ -18,6 +27,7 @@ function OrderCard({
   customerName,
   queuePosition,
   waitMinutes,
+  onAdvance,
 }: OrderCardProps) {
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const TypeIcon =
@@ -82,6 +92,16 @@ function OrderCard({
           <Typography variant="subtitle1" fontWeight={700}>
             {formatCurrency(order.total)}
           </Typography>
+          {onAdvance && NEXT_STATUS[order.status] && (
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small"
+              onClick={onAdvance}
+            >
+              {ADVANCE_LABEL[order.status]}
+            </Button>
+          )}
         </Stack>
       </CardContent>
     </Card>

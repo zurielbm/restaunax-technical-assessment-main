@@ -1,4 +1,4 @@
-import { Order } from "../../../shared/types";
+import { Order, OrderStatus } from "../../../shared/types";
 
 export const WAIT_WARNING_MINUTES = 10;
 export const WAIT_CRITICAL_MINUTES = 20;
@@ -12,8 +12,20 @@ export interface QueueEntry {
   waitMinutes: number;
 }
 
+export const NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
+  pending: "preparing",
+  preparing: "ready",
+  ready: "delivered",
+};
+
+export const ADVANCE_LABEL: Partial<Record<OrderStatus, string>> = {
+  pending: "Mark preparing",
+  preparing: "Mark ready",
+  ready: "Mark delivered",
+};
+
 export function isActive(order: Order): boolean {
-  return order.status === "pending" || order.status === "preparing";
+  return order.status !== "delivered";
 }
 
 export function waitMinutes(order: Order, now: number): number {

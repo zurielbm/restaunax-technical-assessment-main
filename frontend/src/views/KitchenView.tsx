@@ -3,8 +3,14 @@ import {
   Alert,
   Button,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   LinearProgress,
+  Snackbar,
   Stack,
   Typography,
 } from "@mui/material";
@@ -13,7 +19,7 @@ import { Order } from "../../../shared/types";
 import { useCustomers } from "../hooks/useCustomers";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useOrders } from "../hooks/useOrders";
-import { buildQueue, QueueEntry } from "../queue/queue";
+import { buildQueue, NEXT_STATUS, QueueEntry } from "../queue/queue";
 import NextUpBanner from "../components/NextUpBanner";
 import OrderFilters, { StatusFilter } from "../components/OrderFilters";
 import OrderList from "../components/OrderList";
@@ -47,13 +53,20 @@ function comparatorFor(
   }
 }
 
+interface SnackMessage {
+  message: string;
+  severity: "success" | "error";
+}
+
 function KitchenView() {
-  const { orders, error, isFetching, refetch } = useOrders();
+  const { orders, error, isFetching, refetch, updateStatus } = useOrders();
   const { customersById, failed: customersFailed, retry } = useCustomers();
   const [filter, setFilter] = useState<StatusFilter>("queue");
   const [searchInput, setSearchInput] = useState("");
   const [type, setType] = useState<TypeFilter>("all");
   const [sort, setSort] = useState<SortOrder>("queue");
+  const [snack, setSnack] = useState<SnackMessage | null>(null);
+  const [confirmOrder, setConfirmOrder] = useState<Order | null>(null);
   const search = useDebouncedValue(searchInput.trim().toLowerCase(), 250);
 
   const loadedOrders = useMemo(() => orders ?? [], [orders]);
@@ -122,6 +135,38 @@ function KitchenView() {
     setFilter("queue");
     setType("all");
     setSearchInput("");
+  };
+
+  const olderPendingCount = (order: Order) =>
+    loadedOrders.filter(
+      (other) =>
+        other.status === "pending" && other.createdAt < order.createdAt,
+    ).length;
+
+  const performAdvance = (order: Order) => {
+    const next = NEXT_STATUS[order.status];
+    if (!next) return;
+    updateStatus(order.id, next).then((succeeded) =>
+      setSnack(
+        succeeded
+          ? {
+              message: `${shortOrderId(order.id)} moved to ${next}`,
+              severity: "success",
+            }
+          : {
+              message: `Couldn't update ${shortOrderId(order.id)}, the change was rolled back`,
+              severity: "error",
+            },
+      ),
+    );
+  };
+
+  const requestAdvance = (order: Order) => {
+    if (order.status === "pending" && olderPendingCount(order) > 0) {
+      setConfirmOrder(order);
+    } else {
+      performAdvance(order);
+    }
   };
 
   return (
@@ -206,6 +251,7 @@ function KitchenView() {
               customersById.get(nextUp.order.customerId)?.name ??
               `Customer ${shortOrderId(nextUp.order.customerId)}`
             }
+            onAdvance={() => requestAdvance(nextUp.order)}
           />
         )}
 
@@ -222,9 +268,47 @@ function KitchenView() {
                   : "No orders yet."
             }
             onClearFilter={hasActiveFilters ? clearFilters : undefined}
+            onAdvance={requestAdvance}
           />
         )}
       </Stack>
+
+      <Dialog open={confirmOrder !== null} onClose={() => setConfirmOrder(null)}>
+        <DialogTitle>Skip the queue?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {confirmOrder &&
+              `${olderPendingCount(confirmOrder)} pending ${
+                olderPendingCount(confirmOrder) === 1 ? "order has" : "orders have"
+              } waited longer than ${shortOrderId(confirmOrder.id)}.`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOrder(null)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              if (confirmOrder) performAdvance(confirmOrder);
+              setConfirmOrder(null);
+            }}
+          >
+            Start anyway
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {snack && (
+        <Snackbar
+          open
+          autoHideDuration={3000}
+          onClose={() => setSnack(null)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert severity={snack.severity} onClose={() => setSnack(null)}>
+            {snack.message}
+          </Alert>
+        </Snackbar>
+      )}
     </Container>
   );
 }

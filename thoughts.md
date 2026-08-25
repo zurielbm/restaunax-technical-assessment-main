@@ -45,3 +45,4 @@ Added a skeleton UI for the loading and added error handling
 You worked on having a better system for the queue system and a search system, plus a improved filtering and sorting system.
 I just want to make sure that I had all the information needed. I think next I'm thinking of working into like a way for the restaurant owner to be able to move an order from its current state to the next state. I think the simplest implementation will be adding a button
 
+Alright, I added the buttons and verified that the buttons actually update the actual status of the item

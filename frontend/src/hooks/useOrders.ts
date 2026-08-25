@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Order } from "../../../shared/types";
+import { Order, OrderStatus } from "../../../shared/types";
 import { ordersApi } from "../services/api";
 
 interface OrdersResult {
@@ -7,6 +7,7 @@ interface OrdersResult {
   error?: string;
   isFetching: boolean;
   refetch: () => void;
+  updateStatus: (id: string, status: OrderStatus) => Promise<boolean>;
 }
 
 export function errorMessage(error: unknown): string {
@@ -44,5 +45,37 @@ export function useOrders(): OrdersResult {
     load();
   }, [load]);
 
-  return { orders, error, isFetching, refetch: load };
+  const updateStatus = useCallback(
+    (id: string, status: OrderStatus): Promise<boolean> => {
+      let previous: OrderStatus | undefined;
+      setOrders((current) =>
+        current?.map((order) => {
+          if (order.id !== id) return order;
+          previous = order.status;
+          return { ...order, status };
+        }),
+      );
+      return ordersApi.updateOrderStatus(id, status).then(
+        (updated) => {
+          setOrders((current) =>
+            current?.map((order) => (order.id === id ? updated : order)),
+          );
+          return true;
+        },
+        () => {
+          setOrders((current) =>
+            current?.map((order) =>
+              order.id === id && previous
+                ? { ...order, status: previous }
+                : order,
+            ),
+          );
+          return false;
+        },
+      );
+    },
+    [],
+  );
+
+  return { orders, error, isFetching, refetch: load, updateStatus };
 }

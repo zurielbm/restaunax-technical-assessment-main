@@ -10,6 +10,7 @@ interface OrderListProps {
   queueByOrderId: ReadonlyMap<string, QueueEntry>;
   emptyMessage: string;
   onClearFilter?: () => void;
+  onAdvance: (order: Order) => void;
 }
 
 function OrderList({
@@ -18,6 +19,7 @@ function OrderList({
   queueByOrderId,
   emptyMessage,
   onClearFilter,
+  onAdvance,
 }: OrderListProps) {
   if (orders.length === 0) {
     return (
@@ -56,6 +58,7 @@ function OrderList({
             }
             queuePosition={entry?.position}
             waitMinutes={entry?.waitMinutes}
+            onAdvance={() => onAdvance(order)}
           />
         );
       })}
