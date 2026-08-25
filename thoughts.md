@@ -25,3 +25,5 @@ Alright, so Prisma files have been generated. Now we'll look into the API or the
 Add the the REST API for orders took a bit longer than expected but got it working. working on implementing or importing the test data or demo data into the database
 
 Alright we added the seeded data into the database and I've tested out the get works now just to finish up the rest of the API
+
+I finished implementing the REST API for orders and I was also going to implement one for customers since I separated customers from the order

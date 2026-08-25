@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import ordersRouter from './routes/orders';
+import customerRouter from './routes/customer';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/orders', ordersRouter);
+app.use('/api/customer', customerRouter);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
