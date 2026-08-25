@@ -1,43 +1,78 @@
-import { Container, Typography, Box } from '@mui/material';
-import ApiTester from './components/ApiTester';
+import { AppBar, Tab, Tabs, Toolbar, Typography } from "@mui/material";
+import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
+import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
+import { Route, RoutePath, useHashRoute } from "./router/useHashRoute";
+import CashierView from "./views/CashierView";
+import CustomerView from "./views/CustomerView";
+import KitchenView from "./views/KitchenView";
+
+function activeTab(route: Route): Exclude<RoutePath, `track/${string}`> {
+  return route.view === "track" ? "order" : route.view;
+}
+
+function ActiveView({ route }: { route: Route }) {
+  switch (route.view) {
+    case "kitchen":
+      return <KitchenView />;
+    case "cashier":
+      return <CashierView />;
+    case "order":
+      return <CustomerView />;
+    case "track":
+      return <CustomerView trackedOrderId={route.orderId} />;
+  }
+}
 
 function App() {
-  // TODO: Implement your order management dashboard here
-  // 1. Fetch orders from the API using the service in ./services/api.ts
-  // 2. Display orders using Material-UI components
-  // 3. Add functionality to filter orders by status
-  // 4. Add functionality to update order status
-  // 5. Handle loading and error states
+  const { route, navigate } = useHashRoute();
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom>
-          Restaunax Order Dashboard
-        </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph>
-          TODO: Build your order management interface here
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Hints:
-        </Typography>
-        <ul>
-          <li>Use the API service in ./services/api.ts to fetch orders</li>
-          <li>Display orders in a Card or Table layout</li>
-          <li>Show customer info (name, email, phone, reward points) for each order</li>
-          <li>Add status filter buttons or dropdown</li>
-          <li>Make order status updatable with a Select or Buttons</li>
-          <li>Show loading spinner while fetching data</li>
-          <li>Handle errors gracefully with error messages</li>
-        </ul>
-      </Box>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          Testing API Endpoints:
-        </Typography>
-        <ApiTester />
-      </Box>
-    </Container>
+    <>
+      <AppBar position="sticky">
+        <Toolbar sx={{ flexWrap: "wrap", columnGap: 2 }}>
+          <Typography variant="h6" component="span" sx={{ flexGrow: 1 }}>
+            Restaunax
+          </Typography>
+          <Tabs
+            value={activeTab(route)}
+            onChange={(_event, value: RoutePath) => navigate(value)}
+            textColor="inherit"
+            aria-label="Switch view"
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              width: { xs: "100%", sm: "auto" },
+              "& .MuiTabs-indicator": { backgroundColor: "common.white" },
+            }}
+          >
+            <Tab
+              value="kitchen"
+              label="Kitchen"
+              icon={<RestaurantMenuIcon />}
+              iconPosition="start"
+              sx={{ minHeight: 64 }}
+            />
+            <Tab
+              value="cashier"
+              label="Cashier"
+              icon={<PointOfSaleIcon />}
+              iconPosition="start"
+              sx={{ minHeight: 64 }}
+            />
+            <Tab
+              value="order"
+              label="Order Online"
+              icon={<ShoppingBagIcon />}
+              iconPosition="start"
+              sx={{ minHeight: 64 }}
+            />
+          </Tabs>
+        </Toolbar>
+      </AppBar>
+      <ActiveView route={route} />
+    </>
   );
 }
 

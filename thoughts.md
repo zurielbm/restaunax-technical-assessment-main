@@ -29,3 +29,11 @@ Alright we added the seeded data into the database and I've tested out the get w
 I finished implementing the REST API for orders and I was also going to implement one for customers since I separated customers from the order
 
 Working on the front end right now I just created a simple front-end UI for fetching the data from the backend in order to ensure that the everything is working fine and as expected
+
+Alright, so first of all, I need to think about this in the perspective of a restaurant owner. I think if I wanted to go the best experience to customers, I would have to ensure the orders first of all get added to the dashboard. I think I would like to add some kind of timer system where basically it ensures that older orders get priority on what needs to be done. Kind of like a more like a timer, just saying how long they've been waiting for, and then after X amount of time, it goes to red and be like, in this customer has been waiting for their order and it needs to get done soon. I think I would like to implement a first come, first serve type of queue system. I feel like that would be the best. That way, the customers that have already ordered their food can get their food quick and fast. But of course, we can bypass this in case one customer comes and they order something that's basically already available. Like maybe, maybe it's a fast food, maybe like french fries. French fries is probably subir easy to just take it out and give it to the customer, but yeah, but for most of it, I think I do want to make a first come first serve queue system
+
+I think for orders I want to add like a button that allows the owner just to quickly go to the next face on the status of the food but also have the option for the drop-down in case they do need it so I'll have to see how I'll make that look
+
+For creating orders, I think I might try to I will I think I'm making a customer view and then the restaurant view of course will allow this door to make the orders also so I think I need like a cashier view a customer view and a restaurant view in order to get all the main views out there
+
+Finish adding a simple router system. Also, added cache of your customer view and then the kitchen view
