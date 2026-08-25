@@ -11,6 +11,11 @@ export function shortOrderId(id: string): string {
   return `#${id.slice(0, 8)}`;
 }
 
+export function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`;
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+}
+
 export function relativeTime(iso: string): string {
   const minutes = Math.max(
     0,

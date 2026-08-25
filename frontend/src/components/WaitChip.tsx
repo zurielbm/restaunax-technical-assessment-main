@@ -1,5 +1,6 @@
 import { Chip } from "@mui/material";
 import { waitSeverity, WaitSeverity } from "../queue/queue";
+import { formatDuration } from "../utils/format";
 
 const chipColor: Record<WaitSeverity, "success" | "warning" | "error"> = {
   ok: "success",
@@ -7,16 +8,11 @@ const chipColor: Record<WaitSeverity, "success" | "warning" | "error"> = {
   critical: "error",
 };
 
-function formatWait(minutes: number): string {
-  if (minutes < 60) return `${minutes}m`;
-  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
-}
-
 function WaitChip({ minutes }: { minutes: number }) {
   const severity = waitSeverity(minutes);
   return (
     <Chip
-      label={`waiting ${formatWait(minutes)}`}
+      label={`waiting ${formatDuration(minutes)}`}
       color={chipColor[severity]}
       size="small"
       sx={{

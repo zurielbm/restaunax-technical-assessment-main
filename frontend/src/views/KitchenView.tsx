@@ -25,6 +25,7 @@ import OrderDetailDrawer from "../components/OrderDetailDrawer";
 import OrderFilters, { StatusFilter } from "../components/OrderFilters";
 import OrderList from "../components/OrderList";
 import OrderListSkeleton from "../components/OrderListSkeleton";
+import StatsRow from "../components/StatsRow";
 import OrderToolbar, {
   SortOrder,
   TypeFilter,
@@ -188,6 +189,14 @@ function KitchenView() {
             <RefreshIcon />
           </IconButton>
         </Stack>
+
+        {(orders || initialLoading) && (
+          <StatsRow
+            queue={queue}
+            orders={loadedOrders}
+            loading={initialLoading}
+          />
+        )}
 
         <OrderToolbar
           search={searchInput}

@@ -50,3 +50,4 @@ Alright, I added the buttons and verified that the buttons actually update the a
 working on better way to see the full details of the menu items. Current design is basically clicking on the cart and opening a panel with all the information on it.
 
 I think kitchen-wise it's almost everything ready. I think I just need analytics
+I think we can do something simple just to see how many words are in queue revenue I think any major or how many items or menus needs to I guess how many orders need to be prioritized at the moment. I think and a way to know what the current queue time or wait time is like an average or something like that
