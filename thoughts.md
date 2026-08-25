@@ -15,3 +15,5 @@ Alright, I finished reading the types that he has filed and then to answer the q
 As of now, I've created a customer interface and updated all the interfaces that require customer information
 
 I've added the Postgres Docker Compose. I have also add adminer to view the database
+
+I've added the Prisma models and enums for the schema for the Postgres to reflect what we currently have on the types.ts file

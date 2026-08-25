@@ -19,15 +19,6 @@ export interface OrderItem {
  * NOTE: This structure has customer data embedded directly in the order
  * Consider whether this is the best data modeling approach
  */
-export interface Order {
-  id: string;
-  customerId: string;
-  orderType: OrderType;
-  status: OrderStatus;
-  items: OrderItem[];
-  total: number;
-  createdAt: string; // ISO 8601 date string
-}
 
 export interface Customer {
   id: string;
@@ -35,6 +26,16 @@ export interface Customer {
   email: string;
   phone: string;
   rewardPoints: number;
+  createdAt: string; // ISO 8601 date string
+}
+
+export interface Order {
+  id: string;
+  customerId: string;
+  orderType: OrderType;
+  status: OrderStatus;
+  items: OrderItem[];
+  total: number;
   createdAt: string; // ISO 8601 date string
 }
 
