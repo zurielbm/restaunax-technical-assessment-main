@@ -19,12 +19,19 @@ export interface OrderItem {
  * NOTE: This structure has customer data embedded directly in the order
  * Consider whether this is the best data modeling approach
  */
+
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  rewardPoints: number;
+  createdAt: string; // ISO 8601 date string
+}
+
 export interface Order {
   id: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  customerRewardPoints: number;
+  customerId: string;
   orderType: OrderType;
   status: OrderStatus;
   items: OrderItem[];
@@ -40,9 +47,7 @@ export interface ApiError {
 
 // Request body types
 export interface CreateOrderRequest {
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
+  customerId: string;
   orderType: OrderType;
   items: Omit<OrderItem, 'id'>[];
 }
