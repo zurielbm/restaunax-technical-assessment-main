@@ -17,3 +17,6 @@ As of now, I've created a customer interface and updated all the interfaces that
 I've added the Postgres Docker Compose. I have also add adminer to view the database
 
 I've added the Prisma models and enums for the schema for the Postgres to reflect what we currently have on the types.ts file
+
+I deployed Persmona to my DB has generated a migration file. everything looks well I think we're gonna move on to implementing the rest of the stuff I believe I'll have to check the README file again to make sure that I all the types and items are finished before starting with the API
+
