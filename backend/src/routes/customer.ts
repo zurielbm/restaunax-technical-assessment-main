@@ -1,8 +1,9 @@
 import { Router, Request, Response } from "express";
-import { Order, OrderStatus } from "../../../shared/types";
 import { prisma } from "../lib/prisma";
 
 const router = Router();
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * GET /api/customer
@@ -18,7 +19,7 @@ router.get("/", async (_req: Request, res: Response) => {
         return res.json(customers);
     } catch (error) {
         console.error("Error fetching customers:", error);
-        res.status(500).json({ error: "Failed to fetch customers" });
+        return res.status(500).json({ error: "Failed to fetch customers" });
     }
 })
 
@@ -43,7 +44,7 @@ router.get("/:id", async (_req: Request, res: Response) => {
         return res.json(customer);
     } catch (error) {
         console.error("Error fetching customer:", error);
-        res.status(500).json({ error: "Failed to fetch customer" });
+        return res.status(500).json({ error: "Failed to fetch customer" });
     }
 });
 
@@ -55,9 +56,12 @@ router.post("/", async (_req: Request, res: Response) => {
     try {
         const { name, email, phone } = _req.body;
 
-        // Validate input
         if (!name || !email || !phone) {
             return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        if (typeof email !== "string" || !EMAIL_REGEX.test(email)) {
+            return res.status(400).json({ error: "Invalid email format" });
         }
 
         const newCustomer = await prisma.customer.create({
@@ -70,9 +74,15 @@ router.post("/", async (_req: Request, res: Response) => {
         });
 
         return res.status(201).json(newCustomer);
-    } catch (error) {
+    } catch (error: any) {
+        if (error.code === "P2002") {
+            return res.status(409).json({
+                error: "Customer already exists",
+                message: "A customer with this email already exists",
+            });
+        }
         console.error("Error creating customer:", error);
-        res.status(500).json({ error: "Failed to create customer" });
+        return res.status(500).json({ error: "Failed to create customer" });
     }
 });
 

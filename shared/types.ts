@@ -55,3 +55,9 @@ export interface CreateOrderRequest {
 export interface UpdateOrderStatusRequest {
   status: OrderStatus;
 }
+
+export interface CreateCustomerRequest {
+  name: string;
+  email: string;
+  phone: string;
+}

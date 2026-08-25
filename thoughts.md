@@ -27,3 +27,5 @@ Add the the REST API for orders took a bit longer than expected but got it worki
 Alright we added the seeded data into the database and I've tested out the get works now just to finish up the rest of the API
 
 I finished implementing the REST API for orders and I was also going to implement one for customers since I separated customers from the order
+
+Working on the front end right now I just created a simple front-end UI for fetching the data from the backend in order to ensure that the everything is working fine and as expected

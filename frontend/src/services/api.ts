@@ -1,7 +1,13 @@
-import { Order, OrderStatus } from '../../../shared/types';
+import {
+  Order,
+  OrderStatus,
+  CreateOrderRequest,
+  Customer,
+  CreateCustomerRequest,
+} from "../../../shared/types";
 
 // API base URL - candidates will use this when implementing their API calls
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = "http://localhost:3000/api";
 
 /**
  * API service for interacting with the backend
@@ -20,7 +26,22 @@ export const ordersApi = {
     // 4. Return the parsed JSON response
     // Example: const url = status ? `${API_BASE_URL}/orders?status=${status}` : `${API_BASE_URL}/orders`;
 
-    throw new Error('Not implemented yet');
+    try {
+      const url = _status
+        ? `${API_BASE_URL}/orders?status=${_status}`
+        : `${API_BASE_URL}/orders`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Error fetching orders: ${response.statusText}`);
+      }
+
+      const orders: Order[] = await response.json();
+      return orders;
+    } catch (error) {
+      console.error("Error in getOrders:", error);
+      throw error;
+    }
   },
 
   /**
@@ -33,7 +54,19 @@ export const ordersApi = {
     // 3. Return the parsed JSON response
     // Example: const response = await fetch(`${API_BASE_URL}/orders/${id}`);
 
-    throw new Error('Not implemented yet');
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/${_id}`);
+
+      if (!response.ok) {
+        throw new Error(`Error fetching order: ${response.statusText}`);
+      }
+
+      const order: Order = await response.json();
+      return order;
+    } catch (error) {
+      console.error("Error in getOrderById:", error);
+      throw error;
+    }
   },
 
   /**
@@ -47,13 +80,31 @@ export const ordersApi = {
     // 4. Return the updated order
     // Example: fetch(`${API_BASE_URL}/orders/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) })
 
-    throw new Error('Not implemented yet');
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/${_id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: _status }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error updating order status: ${response.statusText}`);
+      }
+
+      const updatedOrder: Order = await response.json();
+      return updatedOrder;
+    } catch (error) {
+      console.error("Error in updateOrderStatus:", error);
+      throw error;
+    }
   },
 
   /**
    * Create a new order (for testing)
    */
-  async createOrder(_order: Omit<Order, 'id' | 'createdAt'>): Promise<Order> {
+  async createOrder(_order: CreateOrderRequest): Promise<Order> {
     // TODO: Implement this function
     // 1. Make a POST request to /api/orders
     // 2. Send the order data in the request body
@@ -61,9 +112,83 @@ export const ordersApi = {
     // 4. Return the created order
     // Example: fetch(`${API_BASE_URL}/orders`, { method: 'POST', body: JSON.stringify(order) })
 
-    throw new Error('Not implemented yet');
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(_order),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error creating order: ${response.statusText}`);
+      }
+
+      const createdOrder: Order = await response.json();
+      return createdOrder;
+    } catch (error) {
+      console.error("Error in createOrder:", error);
+      throw error;
+    }
+  },
+};
+
+export const customersApi = {
+  async getCustomers(): Promise<Customer[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/customer`);
+
+      if (!response.ok) {
+        throw new Error(`Error fetching customers: ${response.statusText}`);
+      }
+
+      const customers: Customer[] = await response.json();
+      return customers;
+    } catch (error) {
+      console.error("Error in getCustomers:", error);
+      throw error;
+    }
+  },
+
+  async getCustomerById(_id: string): Promise<Customer> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/customer/${_id}`);
+
+      if (!response.ok) {
+        throw new Error(`Error fetching customer: ${response.statusText}`);
+      }
+
+      const customer: Customer = await response.json();
+      return customer;
+    } catch (error) {
+      console.error("Error in getCustomerById:", error);
+      throw error;
+    }
+  },
+
+  async createCustomer(_customer: CreateCustomerRequest): Promise<Customer> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/customer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(_customer),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error creating customer: ${response.statusText}`);
+      }
+
+      const createdCustomer: Customer = await response.json();
+      return createdCustomer;
+    } catch (error) {
+      console.error("Error in createCustomer:", error);
+      throw error;
+    }
   },
 };
 
 // Note: API_BASE_URL is available for use in the functions above
-console.log('API configured for:', API_BASE_URL);
+console.log("API configured for:", API_BASE_URL);

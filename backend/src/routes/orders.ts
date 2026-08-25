@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { Order, OrderStatus } from "../../../shared/types";
+import { OrderStatus, OrderType } from "../../../shared/types";
 import { prisma } from "../lib/prisma";
 
 const router = Router();
@@ -11,11 +11,29 @@ const validOrderStatuses: OrderStatus[] = [
   "delivered",
 ];
 
+const validOrderTypes: OrderType[] = ["delivery", "pickup"];
+
 function isOrderStatus(value: unknown): value is OrderStatus {
   return (
     typeof value === "string" &&
     validOrderStatuses.includes(value as OrderStatus)
   );
+}
+
+function isOrderType(value: unknown): value is OrderType {
+  return (
+    typeof value === "string" && validOrderTypes.includes(value as OrderType)
+  );
+}
+
+function withTotal<T extends { items: { price: number; quantity: number }[] }>(
+  order: T
+): T & { total: number } {
+  const totalCents = order.items.reduce(
+    (sum, item) => sum + Math.round(item.price * 100) * item.quantity,
+    0
+  );
+  return { ...order, total: totalCents / 100 };
 }
 
 // TODO: Implement your data storage solution here
@@ -58,10 +76,10 @@ router.get("/", async (_req: Request, res: Response) => {
       },
     });
 
-    return res.json(orders);
+    return res.json(orders.map(withTotal));
   } catch (error) {
     console.error("Error fetching orders:", error);
-    res.status(500).json({ error: "Failed to fetch orders" });
+    return res.status(500).json({ error: "Failed to fetch orders" });
   }
 });
 
@@ -90,10 +108,10 @@ router.get("/:id", async (_req: Request, res: Response) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    return res.json(order);
+    return res.json(withTotal(order));
   } catch (error) {
     console.error("Error fetching order:", error);
-    res.status(500).json({ error: "Failed to fetch order" });
+    return res.status(500).json({ error: "Failed to fetch order" });
   }
 });
 
@@ -112,9 +130,34 @@ router.post("/", async (_req: Request, res: Response) => {
   try {
     const { customerId, orderType, items } = _req.body;
 
-    // Validate request body
-    if (!customerId || !orderType || !items || !Array.isArray(items)) {
-      return res.status(400).json({ error: "Invalid request body" });
+    if (
+      typeof customerId !== "string" ||
+      !isOrderType(orderType) ||
+      !Array.isArray(items) ||
+      items.length === 0
+    ) {
+      return res.status(400).json({
+        error: "Invalid request body",
+        message:
+          "customerId (string), orderType (delivery | pickup) and a non-empty items array are required",
+      });
+    }
+
+    const itemsAreValid = items.every(
+      (item: any) =>
+        typeof item?.name === "string" &&
+        item.name.trim() !== "" &&
+        Number.isInteger(item.quantity) &&
+        item.quantity > 0 &&
+        typeof item.price === "number" &&
+        item.price >= 0
+    );
+    if (!itemsAreValid) {
+      return res.status(400).json({
+        error: "Invalid order items",
+        message:
+          "each item needs a name, a positive integer quantity and a non-negative price",
+      });
     }
 
     // Create the new order in the database
@@ -137,10 +180,16 @@ router.post("/", async (_req: Request, res: Response) => {
       },
     });
 
-    return res.status(201).json(newOrder);
-  } catch (error) {
+    return res.status(201).json(withTotal(newOrder));
+  } catch (error: any) {
+    if (error.code === "P2003") {
+      return res.status(400).json({
+        error: "Unknown customer",
+        message: "No customer exists with the provided customerId",
+      });
+    }
     console.error("Error creating order:", error);
-    res.status(500).json({ error: "Failed to create order" });
+    return res.status(500).json({ error: "Failed to create order" });
   }
 });
 
@@ -172,13 +221,14 @@ router.patch("/:id", async (_req: Request, res: Response) => {
       include: { items: true },
     });
 
-    return res.json(updatedOrder);
-  } catch (error) {
+    return res.json(withTotal(updatedOrder));
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "Order not found" });
+    }
     console.error("Error updating order status:", error);
-    res.status(500).json({ error: "Failed to update order status" });
+    return res.status(500).json({ error: "Failed to update order status" });
   }
-
-  res.status(501).json({ error: "Not implemented yet" });
 });
 
 export default router;

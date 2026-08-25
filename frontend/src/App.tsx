@@ -1,4 +1,5 @@
 import { Container, Typography, Box } from '@mui/material';
+import ApiTester from './components/ApiTester';
 
 function App() {
   // TODO: Implement your order management dashboard here
@@ -29,6 +30,12 @@ function App() {
           <li>Show loading spinner while fetching data</li>
           <li>Handle errors gracefully with error messages</li>
         </ul>
+      </Box>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          Testing API Endpoints:
+        </Typography>
+        <ApiTester />
       </Box>
     </Container>
   );
