@@ -11,6 +11,7 @@ interface OrderListProps {
   emptyMessage: string;
   onClearFilter?: () => void;
   onAdvance: (order: Order) => void;
+  onOpen: (order: Order) => void;
 }
 
 function OrderList({
@@ -20,6 +21,7 @@ function OrderList({
   emptyMessage,
   onClearFilter,
   onAdvance,
+  onOpen,
 }: OrderListProps) {
   if (orders.length === 0) {
     return (
@@ -59,6 +61,7 @@ function OrderList({
             queuePosition={entry?.position}
             waitMinutes={entry?.waitMinutes}
             onAdvance={() => onAdvance(order)}
+            onOpen={() => onOpen(order)}
           />
         );
       })}

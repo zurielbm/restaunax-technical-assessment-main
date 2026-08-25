@@ -46,3 +46,7 @@ You worked on having a better system for the queue system and a search system, p
 I just want to make sure that I had all the information needed. I think next I'm thinking of working into like a way for the restaurant owner to be able to move an order from its current state to the next state. I think the simplest implementation will be adding a button
 
 Alright, I added the buttons and verified that the buttons actually update the actual status of the item
+
+working on better way to see the full details of the menu items. Current design is basically clicking on the cart and opening a panel with all the information on it.
+
+I think kitchen-wise it's almost everything ready. I think I just need analytics

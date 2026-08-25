@@ -21,6 +21,7 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useOrders } from "../hooks/useOrders";
 import { buildQueue, NEXT_STATUS, QueueEntry } from "../queue/queue";
 import NextUpBanner from "../components/NextUpBanner";
+import OrderDetailDrawer from "../components/OrderDetailDrawer";
 import OrderFilters, { StatusFilter } from "../components/OrderFilters";
 import OrderList from "../components/OrderList";
 import OrderListSkeleton from "../components/OrderListSkeleton";
@@ -67,6 +68,7 @@ function KitchenView() {
   const [sort, setSort] = useState<SortOrder>("queue");
   const [snack, setSnack] = useState<SnackMessage | null>(null);
   const [confirmOrder, setConfirmOrder] = useState<Order | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const search = useDebouncedValue(searchInput.trim().toLowerCase(), 250);
 
   const loadedOrders = useMemo(() => orders ?? [], [orders]);
@@ -125,6 +127,8 @@ function KitchenView() {
   }, [loadedOrders, queue, queueByOrderId, filter, type, search, sort, customersById]);
 
   const nextUp = queue[0];
+  const selectedOrder =
+    loadedOrders.find((order) => order.id === selectedId) ?? null;
   const hasActiveFilters =
     filter !== "queue" || type !== "all" || search !== "";
   const initialLoading = !orders && isFetching;
@@ -269,9 +273,24 @@ function KitchenView() {
             }
             onClearFilter={hasActiveFilters ? clearFilters : undefined}
             onAdvance={requestAdvance}
+            onOpen={(order) => setSelectedId(order.id)}
           />
         )}
       </Stack>
+
+      <OrderDetailDrawer
+        order={selectedOrder}
+        customer={
+          selectedOrder
+            ? customersById.get(selectedOrder.customerId)
+            : undefined
+        }
+        queueEntry={
+          selectedOrder ? queueByOrderId.get(selectedOrder.id) : undefined
+        }
+        onClose={() => setSelectedId(null)}
+        onAdvance={requestAdvance}
+      />
 
       <Dialog open={confirmOrder !== null} onClose={() => setConfirmOrder(null)}>
         <DialogTitle>Skip the queue?</DialogTitle>

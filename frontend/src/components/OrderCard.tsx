@@ -20,6 +20,7 @@ interface OrderCardProps {
   queuePosition?: number;
   waitMinutes?: number;
   onAdvance?: () => void;
+  onOpen?: () => void;
 }
 
 function OrderCard({
@@ -28,13 +29,18 @@ function OrderCard({
   queuePosition,
   waitMinutes,
   onAdvance,
+  onOpen,
 }: OrderCardProps) {
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const TypeIcon =
     order.orderType === "delivery" ? DeliveryDiningIcon : ShoppingBagIcon;
 
   return (
-    <Card variant="outlined" sx={{ height: "100%" }}>
+    <Card
+      variant="outlined"
+      onClick={onOpen}
+      sx={{ height: "100%", cursor: onOpen ? "pointer" : undefined }}
+    >
       <CardContent>
         <Stack
           direction="row"
@@ -97,7 +103,10 @@ function OrderCard({
               variant="contained"
               color="secondary"
               size="small"
-              onClick={onAdvance}
+              onClick={(event) => {
+                event.stopPropagation();
+                onAdvance();
+              }}
             >
               {ADVANCE_LABEL[order.status]}
             </Button>
