@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { OrderStatus, OrderType } from "../../../shared/types";
+import { OrderStatus, OrderType, OrderItem } from "../../../shared/types";
 import { prisma } from "../lib/prisma";
 
 const router = Router();
@@ -27,11 +27,11 @@ function isOrderType(value: unknown): value is OrderType {
 }
 
 function withTotal<T extends { items: { price: number; quantity: number }[] }>(
-  order: T
+  order: T,
 ): T & { total: number } {
   const totalCents = order.items.reduce(
     (sum, item) => sum + Math.round(item.price * 100) * item.quantity,
-    0
+    0,
   );
   return { ...order, total: totalCents / 100 };
 }
@@ -144,13 +144,13 @@ router.post("/", async (_req: Request, res: Response) => {
     }
 
     const itemsAreValid = items.every(
-      (item: any) =>
-        typeof item?.name === "string" &&
+      (item: OrderItem) =>
+        typeof item.name === "string" &&
         item.name.trim() !== "" &&
         Number.isInteger(item.quantity) &&
         item.quantity > 0 &&
         typeof item.price === "number" &&
-        item.price >= 0
+        item.price >= 0,
     );
     if (!itemsAreValid) {
       return res.status(400).json({
@@ -168,7 +168,7 @@ router.post("/", async (_req: Request, res: Response) => {
         status: "pending", // Default status for new orders
         createdAt: new Date().toISOString(),
         items: {
-          create: items.map((item: any) => ({
+          create: items.map((item: OrderItem) => ({
             name: item.name,
             quantity: item.quantity,
             price: item.price,

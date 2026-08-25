@@ -37,3 +37,6 @@ I think for orders I want to add like a button that allows the owner just to qui
 For creating orders, I think I might try to I will I think I'm making a customer view and then the restaurant view of course will allow this door to make the orders also so I think I need like a cashier view a customer view and a restaurant view in order to get all the main views out there
 
 Finish adding a simple router system. Also, added cache of your customer view and then the kitchen view
+
+Kind of start on the core requirement, which is basically displaying the informat. And also creating the filtering system
+
