@@ -1,0 +1,16 @@
+1. **Setup Instructions**: Clear steps to run your application
+
+2. **Implementation Notes**: Brief overview of your approach and architecture decisions
+
+3. **Design Decisions**: Explain key technical choices you made and why
+
+4. **Challenges**: Any interesting problems you solved or obstacles you encountered
+
+5. **Additional Features**: If you implemented bonus features or went beyond requirements, explain what and why
+
+So, this will be my free thoughts on everything. First things first, I gotta check out the times. I've already ran the development servers, everything seems to be running well and done. Yeah, I just needed to go read the types files and then start working on the back end. I guess a challenge would be that this is my first time actually developing in an front end and back end separate made me realize that I may have been writing my full stack a bit incorrectly or differently, but this is an experience, so it should be fun. 
+
+Alright, I finished reading the types that he has filed and then to answer the question about orders having customer information now, customer information should be separate from an order and they should be connected via a reference of the customer ID. The reason why it's not a good idea to embed the customer data directly is because of future system which might require customer information and you don't want to also send extra information such as the orders and it would also also since every order would be considered new it would have to resend customer data again and again and it's a bit redundant
+
+As of now, I've created a customer interface and updated all the interfaces that require customer information
+

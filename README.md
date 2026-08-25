@@ -6,6 +6,26 @@ Thank you for your interest in joining our team at Restaunax. This assessment is
 
 We've provided starter code to help you focus on implementing functionality rather than configuration. Take the time you need to showcase your skills.
 
+---
+
+1. **Setup Instructions**: Clear steps to run your application
+2. **Implementation Notes**: Brief overview of your approach and architecture decisions
+3. **Design Decisions**: Explain key technical choices you made and why
+4. **Challenges**: Any interesting problems you solved or obstacles you encountered
+5. **Additional Features**: If you implemented bonus features or went beyond requirements, explain what and why
+
+
+
+
+
+
+
+
+
+
+
+---
+
 ## 🚀 Getting Started
 
 ### 1. Clone and Setup
