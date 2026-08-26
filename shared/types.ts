@@ -3,9 +3,9 @@
  * These types are used by both frontend and backend for type safety
  */
 
-export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'delivered';
+export type OrderStatus = "pending" | "preparing" | "ready" | "delivered";
 
-export type OrderType = 'delivery' | 'pickup';
+export type OrderType = "delivery" | "pickup";
 
 export interface OrderItem {
   id: string;
@@ -39,6 +39,15 @@ export interface Order {
   createdAt: string; // ISO 8601 date string
 }
 
+export type MenuCategory = "pizza" | "salads" | "drinks" | "desserts";
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  price: number;
+  category: MenuCategory;
+}
+
 // API Response types
 export interface ApiError {
   error: string;
@@ -49,9 +58,38 @@ export interface ApiError {
 export interface CreateOrderRequest {
   customerId: string;
   orderType: OrderType;
-  items: Omit<OrderItem, 'id'>[];
+  items: Omit<OrderItem, "id">[];
+  redeemPoints?: number;
 }
 
 export interface UpdateOrderStatusRequest {
   status: OrderStatus;
+}
+
+export interface CreateCustomerRequest {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+export interface SocketSubscriptionResult {
+  ok: boolean;
+  error?: string;
+}
+
+export interface ServerToClientEvents {
+  "order:created": (order: Order) => void;
+  "order:updated": (order: Order) => void;
+}
+
+export interface ClientToServerEvents {
+  "orders:watch": (
+    acknowledge: (result: SocketSubscriptionResult) => void,
+  ) => void;
+  "orders:unwatch": () => void;
+  "order:watch": (
+    orderId: string,
+    acknowledge: (result: SocketSubscriptionResult) => void,
+  ) => void;
+  "order:unwatch": (orderId: string) => void;
 }
