@@ -75,3 +75,5 @@ The next step will probably to try to get this in an actual production ready ser
 I got the docker compose to work locally but also found out I forgot to redirect users to order tracking. It was an oversight because I using a direct link on browser to check lol.
 
 Alright, so everything is working locally. Now just have to test it in production. Hopefully it works
+
+Of course production is not working and hopefully changing the ports about I have to change it because my VPS is already using the other ports.
