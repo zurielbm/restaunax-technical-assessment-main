@@ -13,8 +13,7 @@ import {
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import { Customer } from "../../../shared/types";
 import { customersApi } from "../services/api";
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { EMAIL_PATTERN } from "../utils/validation";
 
 interface CustomerPickerProps {
   customers: Customer[];

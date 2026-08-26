@@ -8,7 +8,7 @@
 
 5. **Additional Features**: If you implemented bonus features or went beyond requirements, explain what and why
 
-So, this will be my free thoughts on everything. First things first, I gotta check out the times. I've already ran the development servers, everything seems to be running well and done. Yeah, I just needed to go read the types files and then start working on the back end. I guess a challenge would be that this is my first time actually developing in an front end and back end separate made me realize that I may have been writing my full stack a bit incorrectly or differently, but this is an experience, so it should be fun. 
+So, this will be my free thoughts on everything. First things first, I gotta check out the times. I've already ran the development servers, everything seems to be running well and done. Yeah, I just needed to go read the types files and then start working on the back end. I guess a challenge would be that this is my first time actually developing in an front end and back end separate made me realize that I may have been writing my full stack a bit incorrectly or differently, but this is an experience, so it should be fun.
 
 Alright, I finished reading the types that he has filed and then to answer the question about orders having customer information now, customer information should be separate from an order and they should be connected via a reference of the customer ID. The reason why it's not a good idea to embed the customer data directly is because of future system which might require customer information and you don't want to also send extra information such as the orders and it would also also since every order would be considered new it would have to resend customer data again and again and it's a bit redundant
 
@@ -52,10 +52,14 @@ working on better way to see the full details of the menu items. Current design 
 I think kitchen-wise it's almost everything ready. I think I just need analytics
 I think we can do something simple just to see how many words are in queue revenue I think any major or how many items or menus needs to I guess how many orders need to be prioritized at the moment. I think and a way to know what the current queue time or wait time is like an average or something like that
 
+So I just come to the realization that I'm gonna have a problem because I do not have a menu system on the database. So either I can create a new schema for menu or maybe I can just like create a type and just do it all locally Which would be easier I think I'm gonna explore first the schema and how that would work and depending on how much work it is I'll see what to do from there.
 
-So I just come to the realization that I'm gonna have a problem because I do not have a menu system on the database. So either I can create a new schema for menu or maybe I can just like create a type and just do it all locally Which would be easier I think I'm gonna explore first the schema and how that would work and depending on how much work it is I'll see what to do from there. 
-
-Alright, based on the current data set. I don't think it would be possible to actually make a menu system because then now I had to redo the database because of the fact that order items do not have a unique factor for the name of the item therefore I would have to change a lot of things which would not be productive or ideal so I think I'm just fake create like a fake menu system and then keep the current schema yeah that's how we'll implement it. 
+Alright, based on the current data set. I don't think it would be possible to actually make a menu system because then now I had to redo the database because of the fact that order items do not have a unique factor for the name of the item therefore I would have to change a lot of things which would not be productive or ideal so I think I'm just fake create like a fake menu system and then keep the current schema yeah that's how we'll implement it.
 
 Yeah, so I had to just create a fake menu. I've added a card system and yeah create a customers to be attached to that
 
+Alright, so now all that's left is creating the customer earning system for online orders, which I think should be easy because then I can just reuse stuff from the cashier view since, in a sense, it's kind of almost the same thing, but I think I want to use email first that way since email is unique, we could automatically get the client's information. If not, they'll just create a new one. Maybe have something like, oh, found you, or look up accounts or create accounts with you. But yeah Something simple, not too complicated, no no authentication system or nothing like that. That'd be over scope for sure
+
+So the order wait time based on my personal experience has always been between 15 and 20, so I'm just gonna default 15 to 20 for clients estimated time on order to be ready for pick up
+
+Alright, so in my original plan I wanted to get or autofill the data based on the email but I think we have to create API backend for this which I haven't done so I don't know if I want to do that I mean I think it should be pretty simple shouldn't take that too long I'll see I'll think about it yeah yeah I think I think it should be I think it might be easy

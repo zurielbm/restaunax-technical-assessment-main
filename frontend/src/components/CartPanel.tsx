@@ -21,6 +21,7 @@ interface CartPanelProps {
   onChangeQuantity: (itemId: string, delta: number) => void;
   submitDisabled: boolean;
   submitHint: string;
+  submitLabel?: string;
   onSubmit: () => void;
 }
 
@@ -32,6 +33,7 @@ function CartPanel({
   onChangeQuantity,
   submitDisabled,
   submitHint,
+  submitLabel = "Place order",
   onSubmit,
 }: CartPanelProps) {
   return (
@@ -104,7 +106,7 @@ function CartPanel({
         disabled={submitDisabled}
         onClick={onSubmit}
       >
-        Place order
+        {submitLabel}
       </Button>
       <Typography variant="caption" color="text.secondary" textAlign="center">
         {submitHint}
