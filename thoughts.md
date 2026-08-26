@@ -63,3 +63,5 @@ Alright, so now all that's left is creating the customer earning system for onli
 So the order wait time based on my personal experience has always been between 15 and 20, so I'm just gonna default 15 to 20 for clients estimated time on order to be ready for pick up
 
 Alright, so in my original plan I wanted to get or autofill the data based on the email but I think we have to create API backend for this which I haven't done so I don't know if I want to do that I mean I think it should be pretty simple shouldn't take that too long I'll see I'll think about it yeah yeah I think I think it should be I think it might be easy
+
+Okay, I want to kind of implement the point system also into the checkout page I've never done the point system so I'm not sure what is a good point system so I'm doing a thousand points is equivalent to a dollar and every dollar they spent is equal to one point for example ten dollars would be ten points I hope that this is a good point system. Gonna still need an API for the point system, I think

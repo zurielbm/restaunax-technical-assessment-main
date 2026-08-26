@@ -128,7 +128,7 @@ router.post("/", async (_req: Request, res: Response) => {
   // 5. Return the created order with 201 status
 
   try {
-    const { customerId, orderType, items } = _req.body;
+    const { customerId, orderType, items, redeemPoints } = _req.body;
 
     if (
       typeof customerId !== "string" ||
@@ -140,6 +140,16 @@ router.post("/", async (_req: Request, res: Response) => {
         error: "Invalid request body",
         message:
           "customerId (string), orderType (delivery | pickup) and a non-empty items array are required",
+      });
+    }
+
+    if (
+      redeemPoints !== undefined &&
+      (!Number.isInteger(redeemPoints) || redeemPoints < 0)
+    ) {
+      return res.status(400).json({
+        error: "Invalid redeem points",
+        message: "redeemPoints must be a non-negative integer",
       });
     }
 
@@ -160,25 +170,57 @@ router.post("/", async (_req: Request, res: Response) => {
       });
     }
 
-    // Create the new order in the database
-    const newOrder = await prisma.order.create({
-      data: {
-        customerId,
-        orderType,
-        status: "pending", // Default status for new orders
-        createdAt: new Date().toISOString(),
-        items: {
-          create: items.map((item: OrderItem) => ({
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-        },
-      },
-      include: {
-        items: true,
-      },
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
     });
+    if (!customer) {
+      return res.status(400).json({
+        error: "Unknown customer",
+        message: "No customer exists with the provided customerId",
+      });
+    }
+
+    // Points economy: 1000 points redeem to $1, every full dollar paid earns 1 point
+    const totalCents = items.reduce(
+      (sum: number, item: OrderItem) =>
+        sum + Math.round(item.price * 100) * item.quantity,
+      0,
+    );
+    const redeemedPoints = Math.min(
+      redeemPoints ?? 0,
+      customer.rewardPoints,
+      totalCents * 10,
+    );
+    const paidCents = totalCents - Math.floor(redeemedPoints / 10);
+    const earnedPoints = Math.floor(paidCents / 100);
+
+    // Create the new order and settle the customer's points in one transaction
+    const [newOrder] = await prisma.$transaction([
+      prisma.order.create({
+        data: {
+          customerId,
+          orderType,
+          status: "pending", // Default status for new orders
+          createdAt: new Date().toISOString(),
+          items: {
+            create: items.map((item: OrderItem) => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          },
+        },
+        include: {
+          items: true,
+        },
+      }),
+      prisma.customer.update({
+        where: { id: customerId },
+        data: {
+          rewardPoints: customer.rewardPoints - redeemedPoints + earnedPoints,
+        },
+      }),
+    ]);
 
     return res.status(201).json(withTotal(newOrder));
   } catch (error: any) {

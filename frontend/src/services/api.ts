@@ -151,6 +151,28 @@ export const customersApi = {
     }
   },
 
+  async getCustomerByEmail(_email: string): Promise<Customer | null> {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/customer/email/${encodeURIComponent(_email)}`
+      );
+
+      if (response.status === 404) {
+        return null;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Error fetching customer: ${response.statusText}`);
+      }
+
+      const customer: Customer = await response.json();
+      return customer;
+    } catch (error) {
+      console.error("Error in getCustomerByEmail:", error);
+      throw error;
+    }
+  },
+
   async getCustomerById(_id: string): Promise<Customer> {
     try {
       const response = await fetch(`${API_BASE_URL}/customer/${_id}`);

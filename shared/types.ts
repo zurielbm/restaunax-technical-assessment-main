@@ -59,6 +59,7 @@ export interface CreateOrderRequest {
   customerId: string;
   orderType: OrderType;
   items: Omit<OrderItem, 'id'>[];
+  redeemPoints?: number;
 }
 
 export interface UpdateOrderStatusRequest {

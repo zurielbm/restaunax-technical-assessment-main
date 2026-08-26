@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { Alert, Box, Container, Paper, Stack, Typography } from "@mui/material";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { OrderType } from "../../../shared/types";
 import { useCart } from "../hooks/useCart";
 import { useCustomers } from "../hooks/useCustomers";
@@ -8,6 +7,7 @@ import { useOrders } from "../hooks/useOrders";
 import { buildQueue, estimatedQueueMinutes } from "../queue/queue";
 import { customersApi, ordersApi } from "../services/api";
 import { formatDuration, shortOrderId } from "../utils/format";
+import { earnedPoints, pointsDiscountCents } from "../utils/points";
 import CartPanel from "../components/CartPanel";
 import CheckoutDialog, { CheckoutDetails } from "../components/CheckoutDialog";
 import MenuGrid from "../components/MenuGrid";
@@ -16,11 +16,13 @@ interface PlacedOrder {
   id: string;
   position: number;
   waitMinutes: number;
+  earnedPoints: number;
+  redeemedPoints: number;
 }
 
 function Storefront() {
   const { orders, refetch } = useOrders();
-  const { customers, register } = useCustomers();
+  const { customers, register, retry } = useCustomers();
   const cart = useCart();
   const [orderType, setOrderType] = useState<OrderType>("pickup");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -34,16 +36,27 @@ function Storefront() {
   const checkout = (details: CheckoutDetails) => {
     setSubmitting(true);
     setCheckoutError(null);
-    const existing = customers.find(
-      (customer) =>
-        customer.email.toLowerCase() === details.email.toLowerCase(),
-    );
+    const existing =
+      details.customer ??
+      customers.find(
+        (customer) =>
+          customer.email.toLowerCase() === details.email.toLowerCase(),
+      );
     const ensureCustomer = existing
       ? Promise.resolve(existing)
-      : customersApi.createCustomer(details).then((customer) => {
-          register(customer);
-          return customer;
-        });
+      : customersApi
+          .createCustomer({
+            name: details.name,
+            email: details.email,
+            phone: details.phone,
+          })
+          .then((customer) => {
+            register(customer);
+            return customer;
+          });
+
+    const totalCents = Math.round(cart.total * 100);
+    const paidCents = totalCents - pointsDiscountCents(details.redeemPoints);
 
     ensureCustomer
       .then((customer) =>
@@ -55,6 +68,7 @@ function Storefront() {
             quantity: line.quantity,
             price: line.item.price,
           })),
+          redeemPoints: details.redeemPoints,
         }),
       )
       .then((order) => {
@@ -62,10 +76,13 @@ function Storefront() {
           id: order.id,
           position: nextPosition,
           waitMinutes: estimatedQueueMinutes(nextPosition),
+          earnedPoints: earnedPoints(paidCents),
+          redeemedPoints: details.redeemPoints,
         });
         cart.clear();
         setCheckoutOpen(false);
         refetch();
+        retry();
       })
       .catch(() =>
         setCheckoutError("Couldn't place your order, please try again"),
@@ -83,7 +100,11 @@ function Storefront() {
         {placed && (
           <Alert severity="success" onClose={() => setPlaced(null)}>
             Order {shortOrderId(placed.id)} placed! estimated ready in ~15 to 20
-            minutes.
+            minutes. You earned {placed.earnedPoints} points
+            {placed.redeemedPoints > 0
+              ? ` and redeemed ${placed.redeemedPoints.toLocaleString()}`
+              : ""}
+            .
           </Alert>
         )}
 
@@ -129,6 +150,7 @@ function Storefront() {
 
       <CheckoutDialog
         open={checkoutOpen}
+        total={cart.total}
         submitting={submitting}
         error={checkoutError}
         onClose={() => setCheckoutOpen(false)}

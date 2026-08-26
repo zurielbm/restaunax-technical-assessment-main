@@ -24,6 +24,35 @@ router.get("/", async (_req: Request, res: Response) => {
 })
 
 /**
+ * GET /api/customer/email/:email
+ * Get a specific customer by email
+ */
+router.get("/email/:email", async (_req: Request, res: Response) => {
+    try {
+        const customerEmail = _req.params.email;
+
+        if (!EMAIL_REGEX.test(customerEmail)) {
+            return res.status(400).json({ error: "Invalid email format" });
+        }
+
+        const customer = await prisma.customer.findUnique({
+            where: {
+                email: customerEmail,
+            },
+        });
+
+        if (!customer) {
+            return res.status(404).json({ error: "Customer not found" });
+        }
+
+        return res.json(customer);
+    } catch (error) {
+        console.error("Error fetching customer by email:", error);
+        return res.status(500).json({ error: "Failed to fetch customer" });
+    }
+});
+
+/**
  * GET /api/customer/:id
  * Get a specific customer by ID
  */
