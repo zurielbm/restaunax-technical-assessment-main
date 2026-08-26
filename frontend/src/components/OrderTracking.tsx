@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Button,
@@ -18,6 +18,7 @@ import { useOrders } from "../hooks/useOrders";
 import { useTrackedOrder } from "../hooks/useTrackedOrder";
 import { buildQueue, estimatedQueueMinutes } from "../queue/queue";
 import { formatCurrency, formatDuration, shortOrderId } from "../utils/format";
+import { takePlacedNote } from "../utils/placedNote";
 
 const STATUS_STEPS: OrderStatus[] = [
   "pending",
@@ -36,6 +37,7 @@ const HEADLINE: Record<OrderStatus, string> = {
 function OrderTracking({ orderId }: { orderId: string }) {
   const { state, retry } = useTrackedOrder(orderId);
   const { orders } = useOrders();
+  const [placedNote, setPlacedNote] = useState(() => takePlacedNote(orderId));
 
   const queue = useMemo(() => buildQueue(orders ?? [], Date.now()), [orders]);
   const entry = queue.find((candidate) => candidate.order.id === orderId);
@@ -43,6 +45,16 @@ function OrderTracking({ orderId }: { orderId: string }) {
   return (
     <Container maxWidth="sm">
       <Stack spacing={2} my={4}>
+        {placedNote && (
+          <Alert severity="success" onClose={() => setPlacedNote(null)}>
+            Order placed! You earned {placedNote.earnedPoints} points
+            {placedNote.redeemedPoints > 0
+              ? ` and redeemed ${placedNote.redeemedPoints.toLocaleString()}`
+              : ""}
+            .
+          </Alert>
+        )}
+
         {state.status === "loading" && (
           <Skeleton variant="rounded" height={320} />
         )}

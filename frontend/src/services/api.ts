@@ -7,7 +7,9 @@ import {
 } from "../../../shared/types";
 
 // API base URL - candidates will use this when implementing their API calls
-const API_BASE_URL = "http://localhost:3000/api";
+export const API_ORIGIN =
+  import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+const API_BASE_URL = `${API_ORIGIN}/api`;
 
 /**
  * API service for interacting with the backend

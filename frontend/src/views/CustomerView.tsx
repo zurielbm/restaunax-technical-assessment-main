@@ -1,25 +1,18 @@
 import { useMemo, useState } from "react";
-import { Alert, Box, Container, Paper, Stack, Typography } from "@mui/material";
+import { Box, Container, Paper, Stack, Typography } from "@mui/material";
 import { useCart } from "../hooks/useCart";
 import { useCustomers } from "../hooks/useCustomers";
 import { useOrders } from "../hooks/useOrders";
 import { buildQueue, estimatedQueueMinutes } from "../queue/queue";
 import { customersApi, ordersApi } from "../services/api";
-import { formatDuration, shortOrderId } from "../utils/format";
+import { formatDuration } from "../utils/format";
 import { earnedPoints, pointsDiscountCents } from "../utils/points";
+import { savePlacedNote } from "../utils/placedNote";
 import CartPanel from "../components/CartPanel";
 import CheckoutDialog, { CheckoutDetails } from "../components/CheckoutDialog";
 import MenuGrid from "../components/MenuGrid";
 import OrderTracking from "../components/OrderTracking";
 import { OrderType } from "../../../shared/types";
-
-interface PlacedOrder {
-  id: string;
-  position: number;
-  waitMinutes: number;
-  earnedPoints: number;
-  redeemedPoints: number;
-}
 
 function Storefront() {
   const { orders, refetch } = useOrders();
@@ -29,7 +22,6 @@ function Storefront() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [placed, setPlaced] = useState<PlacedOrder | null>(null);
 
   const queue = useMemo(() => buildQueue(orders ?? [], Date.now()), [orders]);
   const nextPosition = queue.length + 1;
@@ -73,10 +65,7 @@ function Storefront() {
         }),
       )
       .then((order) => {
-        setPlaced({
-          id: order.id,
-          position: nextPosition,
-          waitMinutes: estimatedQueueMinutes(nextPosition),
+        savePlacedNote(order.id, {
           earnedPoints: earnedPoints(paidCents),
           redeemedPoints: details.redeemPoints,
         });
@@ -84,6 +73,7 @@ function Storefront() {
         setCheckoutOpen(false);
         refetch();
         retry();
+        window.location.hash = `/track/${order.id}`;
       })
       .catch(() =>
         setCheckoutError("Couldn't place your order, please try again"),
@@ -97,17 +87,6 @@ function Storefront() {
         <Typography variant="h4" component="h1">
           Order Online
         </Typography>
-
-        {placed && (
-          <Alert severity="success" onClose={() => setPlaced(null)}>
-            Order {shortOrderId(placed.id)} placed! estimated ready in ~15 to 20
-            minutes. You earned {placed.earnedPoints} points
-            {placed.redeemedPoints > 0
-              ? ` and redeemed ${placed.redeemedPoints.toLocaleString()}`
-              : ""}
-            .
-          </Alert>
-        )}
 
         <Box
           sx={{

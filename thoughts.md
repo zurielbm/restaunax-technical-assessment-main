@@ -69,3 +69,9 @@ Okay, I want to kind of implement the point system also into the checkout page I
 Alright, I'll start implementing order updates with the websockets so i can be real time. hope it work outs.
 
 Test of websocket is working. now need to make it look better.
+
+The next step will probably to try to get this in an actual production ready server. I will use Docker Compose for this. 
+
+I got the docker compose to work locally but also found out I forgot to redirect users to order tracking. It was an oversight because I using a direct link on browser to check lol.
+
+Alright, so everything is working locally. Now just have to test it in production. Hopefully it works

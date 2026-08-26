@@ -3,7 +3,7 @@ import {
   ClientToServerEvents,
   ServerToClientEvents,
 } from "../../../shared/types";
+import { API_ORIGIN } from "./api";
 
-export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
-  "http://localhost:3000",
-);
+export const socket: Socket<ServerToClientEvents, ClientToServerEvents> =
+  io(API_ORIGIN);
