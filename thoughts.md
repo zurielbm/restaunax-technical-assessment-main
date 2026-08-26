@@ -77,3 +77,8 @@ I got the docker compose to work locally but also found out I forgot to redirect
 Alright, so everything is working locally. Now just have to test it in production. Hopefully it works
 
 Of course production is not working and hopefully changing the ports about I have to change it because my VPS is already using the other ports.
+
+
+And I broke production. was trying to fix ERR_BLOCKED_BY_CLIENT
+
+Reverting change in order to fina an other solution.
