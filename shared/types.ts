@@ -39,6 +39,15 @@ export interface Order {
   createdAt: string; // ISO 8601 date string
 }
 
+export type MenuCategory = "pizza" | "salads" | "drinks" | "desserts";
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  price: number;
+  category: MenuCategory;
+}
+
 // API Response types
 export interface ApiError {
   error: string;
