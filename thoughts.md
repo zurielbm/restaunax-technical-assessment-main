@@ -56,3 +56,6 @@ I think we can do something simple just to see how many words are in queue reven
 So I just come to the realization that I'm gonna have a problem because I do not have a menu system on the database. So either I can create a new schema for menu or maybe I can just like create a type and just do it all locally Which would be easier I think I'm gonna explore first the schema and how that would work and depending on how much work it is I'll see what to do from there. 
 
 Alright, based on the current data set. I don't think it would be possible to actually make a menu system because then now I had to redo the database because of the fact that order items do not have a unique factor for the name of the item therefore I would have to change a lot of things which would not be productive or ideal so I think I'm just fake create like a fake menu system and then keep the current schema yeah that's how we'll implement it. 
+
+Yeah, so I had to just create a fake menu. I've added a card system and yeah create a customers to be attached to that
+
