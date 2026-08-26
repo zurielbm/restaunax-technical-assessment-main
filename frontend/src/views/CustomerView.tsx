@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Alert, Box, Container, Paper, Stack, Typography } from "@mui/material";
 import { useCart } from "../hooks/useCart";
 import { useCustomers } from "../hooks/useCustomers";
@@ -10,14 +10,8 @@ import { earnedPoints, pointsDiscountCents } from "../utils/points";
 import CartPanel from "../components/CartPanel";
 import CheckoutDialog, { CheckoutDetails } from "../components/CheckoutDialog";
 import MenuGrid from "../components/MenuGrid";
-
-import { io, Socket } from "socket.io-client";
-import {
-  ClientToServerEvents,
-  Order,
-  OrderType,
-  ServerToClientEvents,
-} from "../../../shared/types";
+import OrderTracking from "../components/OrderTracking";
+import { OrderType } from "../../../shared/types";
 
 interface PlacedOrder {
   id: string;
@@ -171,67 +165,9 @@ interface CustomerViewProps {
   trackedOrderId?: string;
 }
 
-function LiveOrder({ orderId }: { orderId: string }) {
-  const [order, setOrder] = useState<Order>();
-  const [error, setError] = useState<string>();
-
-  useEffect(() => {
-    const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
-      "http://localhost:3000",
-    );
-
-    socket.on("connect", () => {
-      setError(undefined);
-      socket.emit("order:watch", orderId, (result) => {
-        if (!result.ok) {
-          setError(result.error ?? "Could not track this order");
-          return;
-        }
-
-        ordersApi
-          .getOrderById(orderId)
-          .then(setOrder)
-          .catch(() => {
-            setError("Could not load this order");
-          });
-      });
-    });
-
-    socket.on("order:updated", (updatedOrder) => {
-      setOrder(updatedOrder);
-      setError(undefined);
-    });
-    socket.on("connect_error", () => {
-      setError("Could not connect to live tracking");
-    });
-
-    return () => {
-      socket.emit("order:unwatch", orderId);
-      socket.disconnect();
-    };
-  }, [orderId]);
-
-  return (
-    <Container maxWidth="lg">
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Order Online
-        </Typography>
-        {error ? (
-          <Alert severity="error">{error}</Alert>
-        ) : (
-          <Typography variant="body1" color="text.secondary">
-            Live tracking for order {orderId} is {order?.status ?? "loading"}
-          </Typography>
-        )}
-      </Box>
-    </Container>
-  );
-}
-
 function CustomerView({ trackedOrderId }: CustomerViewProps) {
   if (trackedOrderId) {
-    return <LiveOrder orderId={trackedOrderId} />;
+    return <OrderTracking orderId={trackedOrderId} />;
   }
   return <Storefront />;
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Order, OrderStatus } from "../../../shared/types";
 import { ordersApi } from "../services/api";
+import { socket } from "../services/socket";
 
 interface OrdersResult {
   orders?: Order[];
@@ -44,6 +45,42 @@ export function useOrders(): OrdersResult {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    const watch = () => {
+      socket.emit("orders:watch", () => undefined);
+    };
+    const upsert = (order: Order) => {
+      setOrders((current) => {
+        if (!current) return current;
+        if (current.some((candidate) => candidate.id === order.id)) {
+          return current.map((candidate) =>
+            candidate.id === order.id ? order : candidate,
+          );
+        }
+        return [order, ...current];
+      });
+    };
+    const replace = (order: Order) => {
+      setOrders((current) =>
+        current?.map((candidate) =>
+          candidate.id === order.id ? order : candidate,
+        ),
+      );
+    };
+
+    socket.on("order:created", upsert);
+    socket.on("order:updated", replace);
+    socket.on("connect", watch);
+    watch();
+
+    return () => {
+      socket.emit("orders:unwatch");
+      socket.off("order:created", upsert);
+      socket.off("order:updated", replace);
+      socket.off("connect", watch);
+    };
+  }, []);
 
   const updateStatus = useCallback(
     (id: string, status: OrderStatus): Promise<boolean> => {
