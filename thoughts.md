@@ -81,4 +81,7 @@ Of course production is not working and hopefully changing the ports about I hav
 
 And I broke production. was trying to fix ERR_BLOCKED_BY_CLIENT
 
-Reverting change in order to fina an other solution.
+Reverting change in order to fina an other solution. 
+
+Issue was on my part on the back end for the VPS. I had to create an isolated environment for this. 
+
